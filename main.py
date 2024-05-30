@@ -22,7 +22,7 @@ train_generator = train_data_generator.flow_from_directory(
     class_mode='categorical'
 )
 
-validation_generator = train_data_generator.flow_from_directory(
+validation_generator = validation_data_generator.flow_from_directory(
     'fish_dataset/validation',
     target_size=(299, 299),
     batch_size=32,
