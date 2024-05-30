@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import cv2
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.layers import Dense, Flatten
@@ -67,11 +68,11 @@ model.save('trained_model.h5')
 model = load_model('trained_model.h5')
 
 
-def identify_fish_specie(path):
-    img = image.load_img(path, target_size=(299, 299))
+def identify_fish_specie(data):
+    img = image.load_img(data, target_size=(299, 299)) if type(data) is str else cv2.resize(data, (299, 299))
     img = image.img_to_array(img)
     img = np.expand_dims(img, axis=0)
-    img = img / 255
+    img = img / 255.0
     predicted = model.predict(img)
     predicted_class = np.argmax(predicted, axis=1)
     class_labels = {v: k for k, v in train_generator.class_indices.items()}
@@ -83,3 +84,20 @@ print(f'Identified fish specie: {identify_fish_specie("fish_dataset/test/Gold Fi
 print(f'Identified fish specie: {identify_fish_specie("fish_dataset/test/Tilapia/Picture4.jpg")}')
 print(f'Identified fish specie: {identify_fish_specie("fish_dataset/test/Catfish/0efe7c4b-76e6-4461-9db8-29fda1c30d3e-710mm.jpg")}')
 print(f'Identified fish specie: {identify_fish_specie("fish_dataset/test/Janitor Fish/Janitor Fish 1.jpg")}')
+
+capture = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = capture.read()
+
+    if not ret:
+        break
+
+    cv2.putText(frame, f'Identified fish specie: {identify_fish_specie(frame)}', (8, 28), cv2.QT_FONT_NORMAL, .8, (255, 132, 0), 1, cv2.LINE_AA)
+    cv2.imshow('Press "ESC" to exit', frame)
+
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
+capture.release()
+cv2.destroyAllWindows()
